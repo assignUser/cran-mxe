@@ -1,0 +1,254 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index c3908a46a2..8b54d05600 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -257,8 +257,8 @@ if (LEGACY_BUILD)
+     include(utilities)
+ 
+     if (ENABLE_BCRYPT_ENCRYPTION)
+-        set(CRYPTO_LIBS Bcrypt)
+-        set(CRYPTO_LIBS_ABSTRACT_NAME Bcrypt)
++        set(CRYPTO_LIBS bcrypt)
++        set(CRYPTO_LIBS_ABSTRACT_NAME bcrypt)
+     elseif (ENABLE_OPENSSL_ENCRYPTION)
+         set(CRYPTO_LIBS ${OPENSSL_LIBRARIES} ${ZLIB_LIBRARIES})
+         set(CRYPTO_LIBS_ABSTRACT_NAME crypto ssl z)
+@@ -276,8 +276,8 @@ if (LEGACY_BUILD)
+                 list(APPEND CLIENT_LIBS_ABSTRACT_NAME winhttp)
+             endif ()
+         else ()
+-            set(CLIENT_LIBS Wininet winhttp)
+-            set(CLIENT_LIBS_ABSTRACT_NAME Wininet winhttp)
++            set(CLIENT_LIBS wininet winhttp)
++            set(CLIENT_LIBS_ABSTRACT_NAME wininet winhttp)
+         endif ()
+     endif ()
+ 
+diff --git a/cmake/external_dependencies.cmake b/cmake/external_dependencies.cmake
+index acf16c0a95..6884565f29 100644
+--- a/cmake/external_dependencies.cmake
++++ b/cmake/external_dependencies.cmake
+@@ -120,8 +120,8 @@ if(NOT NO_HTTP_CLIENT AND NOT USE_CRT_HTTP_CLIENT)
+                 message(STATUS "Proxy bypass is enabled via WinHttp")
+             endif()
+         else()
+-            set(CLIENT_LIBS Wininet winhttp)
+-            set(CLIENT_LIBS_ABSTRACT_NAME Wininet winhttp)
++            set(CLIENT_LIBS wininet winhttp)
++            set(CLIENT_LIBS_ABSTRACT_NAME wininet winhttp)
+             message(STATUS "Http client: WinHttp")
+         endif()
+ 
+diff --git a/cmake/platform/windows.cmake b/cmake/platform/windows.cmake
+index 9b91570eaa..ac5489098e 100644
+--- a/cmake/platform/windows.cmake
++++ b/cmake/platform/windows.cmake
+@@ -20,7 +20,7 @@ macro(apply_post_project_platform_settings)
+         set(SDK_INSTALL_BINARY_PREFIX "${SDK_INSTALL_BINARY_PREFIX}/ia32")
+     endif()
+ 
+-    set(PLATFORM_DEP_LIBS Userenv version ws2_32)
+-    set(PLATFORM_DEP_LIBS_ABSTRACT_NAME Userenv version ws2_32)
++    set(PLATFORM_DEP_LIBS userenv version ws2_32)
++    set(PLATFORM_DEP_LIBS_ABSTRACT_NAME userenv version ws2_32)
+ 
+ endmacro()
+diff --git a/cmake/utilities.cmake b/cmake/utilities.cmake
+index c366af92af..3dac56e131 100644
+--- a/cmake/utilities.cmake
++++ b/cmake/utilities.cmake
+@@ -90,11 +90,9 @@ macro(setup_install)
+                 LIBRARY DESTINATION ${LIBRARY_DIRECTORY}
+                 RUNTIME DESTINATION ${BINARY_DIRECTORY} )
+ 
+-        if (BUILD_SHARED_LIBS)
+             install(
+                 FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+                 DESTINATION ${LIBRARY_DIRECTORY}/pkgconfig)
+-        endif()
+     else()
+         if(PLATFORM_CUSTOM)
+             install_custom_library(${PROJECT_NAME})
+diff --git a/src/aws-cpp-sdk-core/CMakeLists.txt b/src/aws-cpp-sdk-core/CMakeLists.txt
+index 9651336cbe..3101b518a1 100644
+--- a/src/aws-cpp-sdk-core/CMakeLists.txt
++++ b/src/aws-cpp-sdk-core/CMakeLists.txt
+@@ -194,7 +194,7 @@ elseif(ENABLE_WINDOWS_CLIENT)
+         return 1;
+         }" WINHTTP_HAS_H2)
+ 
+-        set(CMAKE_REQUIRED_LIBRARIES "Wininet.lib")
++        set(CMAKE_REQUIRED_LIBRARIES "wininet.lib")
+         check_cxx_source_runs("
+         #include <Windows.h>
+         #include <WinInet.h>
+@@ -647,11 +647,9 @@ if(SIMPLE_INSTALL)
+     set(ALL_DEP_LIBS_LINK_FLAGS "${ALL_DEP_LIBS_LINK_FLAGS}")
+     configure_file("${AWS_NATIVE_SDK_ROOT}/toolchains/pkg-config.pc.in" "${PROJECT_NAME}.pc" @ONLY)
+ 
+-    if(BUILD_SHARED_LIBS)
+         install(
+             FILES "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc"
+             DESTINATION ${LIBRARY_DIRECTORY}/pkgconfig)
+-    endif()
+ endif()
+ 
+ install (FILES ${AWS_HEADERS} DESTINATION ${INCLUDE_DIRECTORY}/aws/core)
+diff --git a/src/aws-cpp-sdk-core/source/http/windows/WinConnectionPoolMgr.cpp b/src/aws-cpp-sdk-core/source/http/windows/WinConnectionPoolMgr.cpp
+index 1b11d546c1..b6e82c01f8 100644
+--- a/src/aws-cpp-sdk-core/source/http/windows/WinConnectionPoolMgr.cpp
++++ b/src/aws-cpp-sdk-core/source/http/windows/WinConnectionPoolMgr.cpp
+@@ -6,7 +6,7 @@
+ #include <aws/core/http/windows/WinConnectionPoolMgr.h>
+ #include <aws/core/utils/logging/LogMacros.h>
+ #include <aws/core/utils/memory/AWSMemory.h>
+-#include <Windows.h>
++#include <windows.h>
+ #include <algorithm>
+ 
+ using namespace Aws::Utils::Logging;
+diff --git a/src/aws-cpp-sdk-core/source/http/windows/WinHttpConnectionPoolMgr.cpp b/src/aws-cpp-sdk-core/source/http/windows/WinHttpConnectionPoolMgr.cpp
+index 676752334d..b4a03f9c05 100644
+--- a/src/aws-cpp-sdk-core/source/http/windows/WinHttpConnectionPoolMgr.cpp
++++ b/src/aws-cpp-sdk-core/source/http/windows/WinHttpConnectionPoolMgr.cpp
+@@ -7,7 +7,7 @@
+ 
+ #include <aws/core/utils/StringUtils.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <winhttp.h>
+ 
+ using namespace Aws::Http;
+diff --git a/src/aws-cpp-sdk-core/source/http/windows/WinHttpSyncHttpClient.cpp b/src/aws-cpp-sdk-core/source/http/windows/WinHttpSyncHttpClient.cpp
+index 6823f0d47a..1c64caeb29 100644
+--- a/src/aws-cpp-sdk-core/source/http/windows/WinHttpSyncHttpClient.cpp
++++ b/src/aws-cpp-sdk-core/source/http/windows/WinHttpSyncHttpClient.cpp
+@@ -17,7 +17,7 @@
+ #include <aws/core/utils/ratelimiter/RateLimiterInterface.h>
+ #include <aws/core/utils/UnreferencedParam.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <winhttp.h>
+ #include <sstream>
+ #include <iostream>
+diff --git a/src/aws-cpp-sdk-core/source/http/windows/WinINetConnectionPoolMgr.cpp b/src/aws-cpp-sdk-core/source/http/windows/WinINetConnectionPoolMgr.cpp
+index 9de3d91f02..57722101dd 100644
+--- a/src/aws-cpp-sdk-core/source/http/windows/WinINetConnectionPoolMgr.cpp
++++ b/src/aws-cpp-sdk-core/source/http/windows/WinINetConnectionPoolMgr.cpp
+@@ -4,8 +4,8 @@
+  */
+ 
+ #include <aws/core/http/windows/WinINetConnectionPoolMgr.h>
+-#include <Windows.h>
+-#include <WinInet.h>
++#include <windows.h>
++#include <wininet.h>
+ 
+ using namespace Aws::Http;
+ 
+diff --git a/src/aws-cpp-sdk-core/source/http/windows/WinINetSyncHttpClient.cpp b/src/aws-cpp-sdk-core/source/http/windows/WinINetSyncHttpClient.cpp
+index 0c192974a5..0a6b580156 100644
+--- a/src/aws-cpp-sdk-core/source/http/windows/WinINetSyncHttpClient.cpp
++++ b/src/aws-cpp-sdk-core/source/http/windows/WinINetSyncHttpClient.cpp
+@@ -16,8 +16,8 @@
+ #include <aws/core/utils/ratelimiter/RateLimiterInterface.h>
+ #include <aws/core/utils/UnreferencedParam.h>
+ 
+-#include <Windows.h>
+-#include <WinInet.h>
++#include <windows.h>
++#include <wininet.h>
+ #include <sstream>
+ #include <iostream>
+ 
+diff --git a/src/aws-cpp-sdk-core/source/http/windows/WinSyncHttpClient.cpp b/src/aws-cpp-sdk-core/source/http/windows/WinSyncHttpClient.cpp
+index dfcab2e56e..fe42125fc7 100644
+--- a/src/aws-cpp-sdk-core/source/http/windows/WinSyncHttpClient.cpp
++++ b/src/aws-cpp-sdk-core/source/http/windows/WinSyncHttpClient.cpp
+@@ -16,7 +16,7 @@
+ #include <aws/core/utils/ratelimiter/RateLimiterInterface.h>
+ #include <aws/core/utils/Outcome.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <sstream>
+ #include <iostream>
+ 
+diff --git a/src/aws-cpp-sdk-core/source/net/windows/Net.cpp b/src/aws-cpp-sdk-core/source/net/windows/Net.cpp
+index b1ec65b5df..2256252b37 100644
+--- a/src/aws-cpp-sdk-core/source/net/windows/Net.cpp
++++ b/src/aws-cpp-sdk-core/source/net/windows/Net.cpp
+@@ -3,7 +3,7 @@
+  * SPDX-License-Identifier: Apache-2.0.
+  */
+ 
+-#include <WinSock2.h>
++#include <winsock2.h>
+ #include <cassert>
+ #include <aws/core/utils/logging/LogMacros.h>
+ 
+diff --git a/src/aws-cpp-sdk-core/source/net/windows/SimpleUDP.cpp b/src/aws-cpp-sdk-core/source/net/windows/SimpleUDP.cpp
+index f6e36077ec..405351b611 100644
+--- a/src/aws-cpp-sdk-core/source/net/windows/SimpleUDP.cpp
++++ b/src/aws-cpp-sdk-core/source/net/windows/SimpleUDP.cpp
+@@ -3,9 +3,9 @@
+  * SPDX-License-Identifier: Apache-2.0.
+  */
+ 
+-#include <WinSock2.h>
+-#include <Ws2ipdef.h>
+-#include <Ws2tcpip.h>
++#include <winsock2.h>
++#include <ws2ipdef.h>
++#include <ws2tcpip.h>
+ #include <cassert>
+ #include <aws/core/net/SimpleUDP.h>
+ #include <aws/core/utils/logging/LogMacros.h>
+diff --git a/src/aws-cpp-sdk-core/source/platform/windows/FileSystem.cpp b/src/aws-cpp-sdk-core/source/platform/windows/FileSystem.cpp
+index b6678e1cc9..70766fb8fd 100644
+--- a/src/aws-cpp-sdk-core/source/platform/windows/FileSystem.cpp
++++ b/src/aws-cpp-sdk-core/source/platform/windows/FileSystem.cpp
+@@ -10,7 +10,7 @@
+ #include <aws/core/utils/memory/stl/AWSVector.h>
+ #include <cassert>
+ #include <iostream>
+-#include <Userenv.h>
++#include <userenv.h>
+ 
+ #pragma warning( disable : 4996)
+ 
+diff --git a/src/aws-cpp-sdk-core/source/utils/StringUtils.cpp b/src/aws-cpp-sdk-core/source/utils/StringUtils.cpp
+index e1deb3f046..8c1939dfc8 100644
+--- a/src/aws-cpp-sdk-core/source/utils/StringUtils.cpp
++++ b/src/aws-cpp-sdk-core/source/utils/StringUtils.cpp
+@@ -14,7 +14,7 @@
+ #include <functional>
+ 
+ #ifdef _WIN32
+-#include <Windows.h>
++#include <windows.h>
+ #endif
+ 
+ using namespace Aws::Utils;
+diff --git a/src/aws-cpp-sdk-text-to-speech/include/aws/text-to-speech/windows/WaveOutPCMOutputDriver.h b/src/aws-cpp-sdk-text-to-speech/include/aws/text-to-speech/windows/WaveOutPCMOutputDriver.h
+index 886f2eded2..129f4054c1 100644
+--- a/src/aws-cpp-sdk-text-to-speech/include/aws/text-to-speech/windows/WaveOutPCMOutputDriver.h
++++ b/src/aws-cpp-sdk-text-to-speech/include/aws/text-to-speech/windows/WaveOutPCMOutputDriver.h
+@@ -10,7 +10,7 @@
+ 
+ #include <mutex>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ namespace Aws
+ {
+@@ -45,4 +45,4 @@ namespace Aws
+             std::recursive_mutex m_driverLock;
+         };
+     }
+-}
+\ No newline at end of file
++}

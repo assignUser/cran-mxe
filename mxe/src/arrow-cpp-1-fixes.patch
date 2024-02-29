@@ -1,0 +1,137 @@
+diff --git a/cmake_modules/Findlz4Alt.cmake b/cmake_modules/Findlz4Alt.cmake
+index 77a22957f..2867cb8f4 100644
+--- a/cmake_modules/Findlz4Alt.cmake
++++ b/cmake_modules/Findlz4Alt.cmake
+@@ -33,6 +33,9 @@ if(lz4_FOUND)
+   if(NOT TARGET LZ4::lz4 AND TARGET lz4::lz4)
+     add_library(LZ4::lz4 ALIAS lz4::lz4)
+   endif()
++  if(NOT TARGET LZ4::lz4 AND TARGET LZ4::lz4_static)
++    add_library(LZ4::lz4 ALIAS LZ4::lz4_static)
++  endif()
+   return()
+ endif()
+ 
+diff --git a/cmake_modules/ThirdpartyToolchain.cmake b/cmake_modules/ThirdpartyToolchain.cmake
+index a2627c190..48d13ce23 100644
+--- a/cmake_modules/ThirdpartyToolchain.cmake
++++ b/cmake_modules/ThirdpartyToolchain.cmake
+@@ -446,8 +446,8 @@ endmacro()
+ file(STRINGS "${THIRDPARTY_DIR}/versions.txt" TOOLCHAIN_VERSIONS_TXT)
+ foreach(_VERSION_ENTRY ${TOOLCHAIN_VERSIONS_TXT})
+   # Exclude comments
+-  if(NOT ((_VERSION_ENTRY MATCHES "^[^#][A-Za-z0-9-_]+_VERSION=")
+-          OR (_VERSION_ENTRY MATCHES "^[^#][A-Za-z0-9-_]+_CHECKSUM=")))
++  if(NOT ((_VERSION_ENTRY MATCHES "^[^ #][A-Za-z0-9-_]+_VERSION=")
++          OR (_VERSION_ENTRY MATCHES "^[^ #][A-Za-z0-9-_]+_CHECKSUM=")))
+     continue()
+   endif()
+ 
+@@ -704,10 +704,6 @@ endif()
+ 
+ if(DEFINED ENV{ARROW_MIMALLOC_URL})
+   set(MIMALLOC_SOURCE_URL "$ENV{ARROW_MIMALLOC_URL}")
+-else()
+-  set_urls(MIMALLOC_SOURCE_URL
+-           "https://github.com/microsoft/mimalloc/archive/${ARROW_MIMALLOC_BUILD_VERSION}.tar.gz"
+-           "${THIRDPARTY_MIRROR_URL}/mimalloc-${ARROW_MIMALLOC_BUILD_VERSION}.tar.gz")
+ endif()
+ 
+ if(DEFINED ENV{ARROW_NLOHMANN_JSON_URL})
+@@ -2097,57 +2093,14 @@ if(ARROW_MIMALLOC)
+   if(NOT ARROW_ENABLE_THREADING)
+     message(FATAL_ERROR "Can't use mimalloc with ARROW_ENABLE_THREADING=OFF")
+   endif()
+-
+-  message(STATUS "Building (vendored) mimalloc from source")
+-  # We only use a vendored mimalloc as we want to control its build options.
+-
+-  set(MIMALLOC_LIB_BASE_NAME "mimalloc")
+-  if(WIN32)
+-    set(MIMALLOC_LIB_BASE_NAME "${MIMALLOC_LIB_BASE_NAME}-static")
+-  endif()
+-  if(${UPPERCASE_BUILD_TYPE} STREQUAL "DEBUG")
+-    set(MIMALLOC_LIB_BASE_NAME "${MIMALLOC_LIB_BASE_NAME}-${LOWERCASE_BUILD_TYPE}")
+-  endif()
+-
+-  set(MIMALLOC_PREFIX "${CMAKE_CURRENT_BINARY_DIR}/mimalloc_ep/src/mimalloc_ep")
+-  set(MIMALLOC_INCLUDE_DIR "${MIMALLOC_PREFIX}/include/mimalloc-2.0")
+-  set(MIMALLOC_STATIC_LIB
+-      "${MIMALLOC_PREFIX}/lib/mimalloc-2.0/${CMAKE_STATIC_LIBRARY_PREFIX}${MIMALLOC_LIB_BASE_NAME}${CMAKE_STATIC_LIBRARY_SUFFIX}"
+-  )
+-
+-  set(MIMALLOC_CMAKE_ARGS
+-      ${EP_COMMON_CMAKE_ARGS}
+-      "-DCMAKE_INSTALL_PREFIX=${MIMALLOC_PREFIX}"
+-      -DMI_OVERRIDE=OFF
+-      -DMI_LOCAL_DYNAMIC_TLS=ON
+-      -DMI_BUILD_OBJECT=OFF
+-      -DMI_BUILD_SHARED=OFF
+-      -DMI_BUILD_TESTS=OFF)
+-
+-  externalproject_add(mimalloc_ep
+-                      ${EP_COMMON_OPTIONS}
+-                      URL ${MIMALLOC_SOURCE_URL}
+-                      URL_HASH "SHA256=${ARROW_MIMALLOC_BUILD_SHA256_CHECKSUM}"
+-                      CMAKE_ARGS ${MIMALLOC_CMAKE_ARGS}
+-                      BUILD_BYPRODUCTS "${MIMALLOC_STATIC_LIB}")
+-
+-  file(MAKE_DIRECTORY ${MIMALLOC_INCLUDE_DIR})
+-
+-  add_library(mimalloc::mimalloc STATIC IMPORTED)
+-  set_target_properties(mimalloc::mimalloc PROPERTIES IMPORTED_LOCATION
+-                                                      "${MIMALLOC_STATIC_LIB}")
+-  target_include_directories(mimalloc::mimalloc BEFORE
+-                             INTERFACE "${MIMALLOC_INCLUDE_DIR}")
+-  target_link_libraries(mimalloc::mimalloc INTERFACE Threads::Threads)
+-  if(WIN32)
+-    target_link_libraries(mimalloc::mimalloc INTERFACE "bcrypt.lib" "psapi.lib")
+-  endif()
+-  add_dependencies(mimalloc::mimalloc mimalloc_ep)
+-  add_dependencies(toolchain mimalloc_ep)
+-
+-  list(APPEND ARROW_BUNDLED_STATIC_LIBS mimalloc::mimalloc)
+-
+-  set(mimalloc_VENDORED TRUE)
++  set(mimalloc_SOURCE SYSTEM)
++  resolve_dependency(mimalloc
++                     USE_CONFIG
++                     PC_PACKAGE_NAMES
++                     mimalloc
++                     IS_RUNTIME_DEPENDENCY
++                     TRUE)
++  add_library(mimalloc::mimalloc ALIAS mimalloc-static)
+ endif()
+ 
+ # ----------------------------------------------------------------------
+@@ -2604,16 +2557,11 @@ macro(build_re2)
+ endmacro()
+ 
+ if(ARROW_WITH_RE2)
+-  # Don't specify "PC_PACKAGE_NAMES re2" here because re2.pc may
+-  # include -std=c++11. It's not compatible with C source and C++
+-  # source not uses C++ 11.
+-  resolve_dependency(re2 HAVE_ALT TRUE)
+-  if(${re2_SOURCE} STREQUAL "SYSTEM" AND ARROW_BUILD_STATIC)
+-    get_target_property(RE2_TYPE re2::re2 TYPE)
+-    if(NOT RE2_TYPE STREQUAL "INTERFACE_LIBRARY")
+-      string(APPEND ARROW_PC_LIBS_PRIVATE " $<TARGET_FILE:re2::re2>")
+-    endif()
+-  endif()
++  resolve_dependency(re2
++                     HAVE_ALT
++                     TRUE
++                     PC_PACKAGE_NAMES
++                     re2)
+   add_definitions(-DARROW_WITH_RE2)
+ endif()
+ 
+@@ -5062,7 +5010,7 @@ macro(build_awssdk)
+ endmacro()
+ 
+ if(ARROW_S3)
+-  resolve_dependency(AWSSDK HAVE_ALT TRUE)
++  resolve_dependency(AWSSDK HAVE_ALT TRUE PC_PACKAGE_NAMES aws-cpp-sdk-identity-management aws-cpp-sdk-transfer aws-cpp-sdk-config)
+ 
+   message(STATUS "Found AWS SDK headers: ${AWSSDK_INCLUDE_DIR}")
+   message(STATUS "Found AWS SDK libraries: ${AWSSDK_LINK_LIBRARIES}")

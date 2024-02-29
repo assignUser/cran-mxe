@@ -1,0 +1,126 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index cd12fa7..3f763be 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -95,7 +95,7 @@ if (WIN32)
+     #platform libs come from aws-c-common transitively, so we don't specify them here, but for documentation purposes,
+     #Kernel32 and wsock2 are pulled in automatically. Here we add the lib containing the schannel API.
+     #Also note, you don't get a choice on TLS implementation for Windows.
+-    set(PLATFORM_LIBS Secur32 Crypt32)
++    set(PLATFORM_LIBS secur32 crypt32 ncrypt)
+ elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+     option(USE_VSOCK
+ 	    "Build in support for VSOCK sockets"
+diff --git a/include/aws/io/private/pki_utils.h b/include/aws/io/private/pki_utils.h
+index af04655..3dca32b 100644
+--- a/include/aws/io/private/pki_utils.h
++++ b/include/aws/io/private/pki_utils.h
+@@ -9,7 +9,7 @@
+ #ifdef _WIN32
+ /* It's ok to include external headers because this is a PRIVATE header file
+  * (it is usually a crime to include windows.h from header file) */
+-#    include <Windows.h>
++#    include <windows.h>
+ #endif /* _WIN32 */
+ 
+ #ifdef AWS_OS_APPLE
+diff --git a/source/windows/iocp/iocp_event_loop.c b/source/windows/iocp/iocp_event_loop.c
+index 9ccce30..88d55ec 100644
+--- a/source/windows/iocp/iocp_event_loop.c
++++ b/source/windows/iocp/iocp_event_loop.c
+@@ -12,7 +12,7 @@
+ 
+ #include <aws/io/logging.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ /* The next set of struct definitions are taken directly from the
+     windows documentation. We can't include the header files directly
+diff --git a/source/windows/iocp/pipe.c b/source/windows/iocp/pipe.c
+index 04145c6..dfae262 100644
+--- a/source/windows/iocp/pipe.c
++++ b/source/windows/iocp/pipe.c
+@@ -11,7 +11,7 @@
+ #include <stdbool.h>
+ #include <stdio.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ enum read_end_state {
+     /* Pipe is open. */
+diff --git a/source/windows/iocp/socket.c b/source/windows/iocp/socket.c
+index 6d87941..3edc411 100644
+--- a/source/windows/iocp/socket.c
++++ b/source/windows/iocp/socket.c
+@@ -9,9 +9,9 @@ keep the bellow includes where they are. Also, sorry about the C++ style comment
+ below, clang-format doesn't work (at least on my version) with the c-style comments.*/
+ 
+ // clang-format off
+-#include <WS2tcpip.h>
+-#include <MSWSock.h>
+-#include <Mstcpip.h>
++#include <ws2tcpip.h>
++#include <mswsock.h>
++#include <mstcpip.h>
+ // clang-format on
+ 
+ #include <aws/io/socket.h>
+diff --git a/source/windows/secure_channel_tls_handler.c b/source/windows/secure_channel_tls_handler.c
+index 9ede8de..b7a1a7e 100644
+--- a/source/windows/secure_channel_tls_handler.c
++++ b/source/windows/secure_channel_tls_handler.c
+@@ -18,7 +18,7 @@
+ #include <aws/io/private/tls_channel_handler_shared.h>
+ #include <aws/io/statistics.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ #include <schannel.h>
+ #include <security.h>
+diff --git a/source/windows/shared_library.c b/source/windows/shared_library.c
+index c6c0670..48d726a 100644
+--- a/source/windows/shared_library.c
++++ b/source/windows/shared_library.c
+@@ -4,7 +4,7 @@
+  */
+ 
+ // clang-format off
+-#include <Windows.h>
++#include <windows.h>
+ #include <libloaderapi.h>
+ // clang-format on
+ 
+diff --git a/source/windows/windows_pki_utils.c b/source/windows/windows_pki_utils.c
+index e1c47d5..cb7cac7 100644
+--- a/source/windows/windows_pki_utils.c
++++ b/source/windows/windows_pki_utils.c
+@@ -10,7 +10,8 @@
+ 
+ #include <aws/io/logging.h>
+ 
+-#include <Windows.h>
++#include <wincrypt.h>
++#include <windows.h>
+ #include <stdio.h>
+ #include <string.h>
+ 
+diff --git a/source/windows/winsock_init.c b/source/windows/winsock_init.c
+index 669ae84..32fabd8 100644
+--- a/source/windows/winsock_init.c
++++ b/source/windows/winsock_init.c
+@@ -8,9 +8,9 @@ go around re-ordering windows header files. Also, sorry about the C++ style comm
+ below, clang-format doesn't work (at least on my version) with the c-style comments. */
+ 
+ // clang-format off
+-#include <WinSock2.h>
+-#include <WS2tcpip.h>
+-#include <MSWSock.h>
++#include <winsock2.h>
++#include <ws2tcpip.h>
++#include <mswsock.h>
+ // clang-format on
+ 
+ #include <aws/io/logging.h>

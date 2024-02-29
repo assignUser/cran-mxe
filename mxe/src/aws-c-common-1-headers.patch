@@ -1,0 +1,189 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 09803ff..33e725f 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -62,7 +62,7 @@ file (GLOB AWS_COMMON_EXTERNAL_SRC
+ option(AWS_NUM_CPU_CORES "Number of CPU cores of the target machine. Useful when cross-compiling." 0)
+ 
+ if (WIN32)
+-    set(WINDOWS_KERNEL_LIB "Kernel32" CACHE STRING "The name of the kernel library to link against (default: Kernel32)")
++    set(WINDOWS_KERNEL_LIB "kernel32" CACHE STRING "The name of the kernel library to link against (default: Kernel32)")
+ 
+     file(GLOB AWS_COMMON_OS_HEADERS
+         "include/aws/common/windows/*"
+@@ -85,7 +85,7 @@ if (WIN32)
+     # PSAPI_VERSION=1 is needed to support GetProcessMemoryInfo on both pre and
+     # post Win7 OS's. 
+     list(APPEND PLATFORM_DEFINES PSAPI_VERSION=1)
+-    list(APPEND PLATFORM_LIBS BCrypt ${WINDOWS_KERNEL_LIB} Ws2_32 Shlwapi Psapi)
++    list(APPEND PLATFORM_LIBS bcrypt ${WINDOWS_KERNEL_LIB} ws2_32 shlwapi psapi)
+ else ()
+     file(GLOB AWS_COMMON_OS_HEADERS
+         "include/aws/common/posix/*"
+diff --git a/cmake/AwsCheckHeaders.cmake b/cmake/AwsCheckHeaders.cmake
+index 2e62e0a..3d6af03 100644
+--- a/cmake/AwsCheckHeaders.cmake
++++ b/cmake/AwsCheckHeaders.cmake
+@@ -2,7 +2,7 @@
+ # SPDX-License-Identifier: Apache-2.0.
+ 
+ # This cmake logic verifies that each of our headers is complete, in that it
+-# #includes any necessary dependencies, and that it builds under C++ as well.
++# #includes any necessary dependencies, and that it builds under c++ as well.
+ #
+ # To do so, we generate a single-line C or C++ source file that includes each
+ # header, and link all of these stub source files into a test executable.
+diff --git a/cmake/AwsFeatureTests.cmake b/cmake/AwsFeatureTests.cmake
+index 6b02be7..82b495f 100644
+--- a/cmake/AwsFeatureTests.cmake
++++ b/cmake/AwsFeatureTests.cmake
+@@ -35,7 +35,7 @@ if(NOT CMAKE_CROSSCOMPILING)
+ endif()
+ 
+ check_c_source_compiles("
+-    #include <Windows.h>
++    #include <windows.h>
+     #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+     int main() {
+         return 0;
+diff --git a/cmake/CPackConfig.cmake b/cmake/CPackConfig.cmake
+index 2f9d0cc..c7fa69a 100644
+--- a/cmake/CPackConfig.cmake
++++ b/cmake/CPackConfig.cmake
+@@ -65,5 +65,5 @@ set(CPACK_RPM_EXCLUDE_FROM_AUTO_FILELIST_ADDITION
+     /usr/${LIBRARY_DIRECTORY}/cmake
+     /usr/include/aws)
+ 
+-# Include CPack, which generates the package target
++# include cpack, which generates the package target
+ include(CPack)
+diff --git a/include/aws/testing/aws_test_harness.h b/include/aws/testing/aws_test_harness.h
+index f9bf631..71c300e 100644
+--- a/include/aws/testing/aws_test_harness.h
++++ b/include/aws/testing/aws_test_harness.h
+@@ -502,7 +502,7 @@ fail:
+ /* https://docs.microsoft.com/en-us/windows/console/console-virtual-terminal-sequences */
+ #ifdef _WIN32
+ 
+-#    include <Windows.h>
++#    include <windows.h>
+ 
+ #    ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
+ #        define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+diff --git a/source/allocator.c b/source/allocator.c
+index 02847b1..d3d1e98 100644
+--- a/source/allocator.c
++++ b/source/allocator.c
+@@ -12,7 +12,7 @@
+ #include <stdlib.h>
+ 
+ #ifdef _WIN32
+-#    include <Windows.h>
++#    include <windows.h>
+ #endif
+ 
+ #ifdef __MACH__
+diff --git a/source/common.c b/source/common.c
+index f734c16..2c971b5 100644
+--- a/source/common.c
++++ b/source/common.c
+@@ -14,7 +14,7 @@
+ #include <stdlib.h>
+ 
+ #ifdef _WIN32
+-#    include <Windows.h>
++#    include <windows.h>
+ #else
+ #    include <dlfcn.h>
+ #endif
+diff --git a/source/windows/clock.c b/source/windows/clock.c
+index b7b0b38..3c36aa1 100644
+--- a/source/windows/clock.c
++++ b/source/windows/clock.c
+@@ -3,7 +3,7 @@
+  * SPDX-License-Identifier: Apache-2.0.
+  */
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <aws/common/clock.h>
+ 
+ static const uint64_t FILE_TIME_TO_NS = 100;
+diff --git a/source/windows/condition_variable.c b/source/windows/condition_variable.c
+index 5a989ea..07d6a0c 100644
+--- a/source/windows/condition_variable.c
++++ b/source/windows/condition_variable.c
+@@ -8,7 +8,7 @@
+ #include <aws/common/clock.h>
+ #include <aws/common/mutex.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ #define AWSCV_TO_WINDOWS(pCV) (PCONDITION_VARIABLE) & (pCV)->condition_handle
+ 
+diff --git a/source/windows/device_random.c b/source/windows/device_random.c
+index 0233d68..99de174 100644
+--- a/source/windows/device_random.c
++++ b/source/windows/device_random.c
+@@ -7,7 +7,7 @@
+ #include <aws/common/byte_buf.h>
+ #include <aws/common/thread.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <bcrypt.h>
+ 
+ static BCRYPT_ALG_HANDLE s_alg_handle = NULL;
+diff --git a/source/windows/file.c b/source/windows/file.c
+index 7d4bb96..9d1d85f 100644
+--- a/source/windows/file.c
++++ b/source/windows/file.c
+@@ -8,7 +8,7 @@
+ #include <aws/common/logging.h>
+ #include <aws/common/string.h>
+ 
+-#include <Shlwapi.h>
++#include <shlwapi.h>
+ #include <errno.h>
+ #include <io.h>
+ #include <stdio.h>
+diff --git a/source/windows/mutex.c b/source/windows/mutex.c
+index aedefd2..75e7a23 100644
+--- a/source/windows/mutex.c
++++ b/source/windows/mutex.c
+@@ -6,7 +6,7 @@
+ #include <aws/common/mutex.h>
+ #include <aws/common/thread.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ /* Convert a string from a macro to a wide string */
+ #define WIDEN2(s) L## #s
+diff --git a/source/windows/rw_lock.c b/source/windows/rw_lock.c
+index 36cc81a..5bf73c7 100644
+--- a/source/windows/rw_lock.c
++++ b/source/windows/rw_lock.c
+@@ -6,7 +6,7 @@
+ #include <aws/common/rw_lock.h>
+ #include <aws/common/thread.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ #include <synchapi.h>
+ 
+ /* Convert a string from a macro to a wide string */
+diff --git a/source/windows/thread.c b/source/windows/thread.c
+index 9124afe..b172178 100644
+--- a/source/windows/thread.c
++++ b/source/windows/thread.c
+@@ -10,7 +10,7 @@
+ #include <aws/common/private/thread_shared.h>
+ #include <aws/common/string.h>
+ 
+-#include <Windows.h>
++#include <windows.h>
+ 
+ #include <inttypes.h>
+ 

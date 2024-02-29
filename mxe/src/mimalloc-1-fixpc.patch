@@ -1,0 +1,12 @@
+diff --git a/mimalloc.pc.in b/mimalloc.pc.in
+index 36da203..7dd38fb 100644
+--- a/mimalloc.pc.in
++++ b/mimalloc.pc.in
+@@ -6,6 +6,6 @@ Name: @PROJECT_NAME@
+ Description: A compact general purpose allocator with excellent performance
+ Version: @PACKAGE_VERSION@
+ URL: https://github.com/microsoft/mimalloc/
+-Libs: -L${libdir} -lmimalloc
++Libs: -L${libdir} -lmimalloc-static
+ Libs.private: @pc_libraries@
+ Cflags: -I${includedir}

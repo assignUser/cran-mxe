@@ -1,0 +1,26 @@
+diff --git a/tests/v3-client/aws_iot_client_test.c b/tests/v3-client/aws_iot_client_test.c
+index 5b3fea3..f3419b0 100644
+--- a/tests/v3-client/aws_iot_client_test.c
++++ b/tests/v3-client/aws_iot_client_test.c
+@@ -26,7 +26,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #ifdef WIN32
+-#    include <Windows.h>
++#    include <windows.h>
+ #    define sleep Sleep
+ #else
+ #    include <unistd.h>
+diff --git a/tests/v3-client/paho_client_test.c b/tests/v3-client/paho_client_test.c
+index 60d87ba..3afe9b1 100644
+--- a/tests/v3-client/paho_client_test.c
++++ b/tests/v3-client/paho_client_test.c
+@@ -23,7 +23,7 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #ifdef WIN32
+-#    include <Windows.h>
++#    include <windows.h>
+ #    define sleep Sleep
+ #else
+ #    include <unistd.h>
