@@ -1,0 +1,45 @@
+diff -Nru hdf-4.2.13-orig/configure.ac hdf-4.2.13-patched/configure.ac
+--- hdf-4.2.13-orig/configure.ac	2017-06-24 17:00:04.000000000 -0400
++++ hdf-4.2.13-patched/configure.ac	2022-12-13 05:17:15.081518772 -0500
+@@ -871,6 +871,7 @@
+   *-*-solaris2*)        BAR="solaris"     ;;
+   *-apple*)             BAR="apple"       ;;
+   *-pc-cygwin*)         BAR="linux"       ;;
++  *-*-mingw*)	         BAR="linux"       ;;
+   *)                    echo "*** unknown host $host!"; exit 1 ;;
+ esac
+ src_files=""
+diff -Nru hdf-4.2.13-orig/hdf/src/hdfi.h hdf-4.2.13-patched/hdf/src/hdfi.h
+--- hdf-4.2.13-orig/hdf/src/hdfi.h	2017-06-24 17:00:04.000000000 -0400
++++ hdf-4.2.13-patched/hdf/src/hdfi.h	2022-12-13 05:17:15.081518772 -0500
+@@ -589,8 +589,8 @@
+ #include <sys/stat.h>
+ #include <unistd.h>
+ #else /* !UNIX386 */
+-#include <sys\types.h>      /* for unbuffered file I/O */
+-#include <sys\stat.h>
++#include <sys/types.h>      /* for unbuffered file I/O */
++#include <sys/stat.h>
+ #include <io.h>
+ #include <conio.h>          /* for debugging getch() calls */
+ #include <malloc.h>
+diff -Nru hdf-4.2.13-orig/mfhdf/ncgen/Makefile.am hdf-4.2.13-patched/mfhdf/ncgen/Makefile.am
+--- hdf-4.2.13-orig/mfhdf/ncgen/Makefile.am	2017-06-24 17:00:04.000000000 -0400
++++ hdf-4.2.13-patched/mfhdf/ncgen/Makefile.am	2022-12-13 05:17:15.081518772 -0500
+@@ -26,16 +26,6 @@
+ 
+ bin_PROGRAMS = ncgen
+ 
+-if HDF_BUILD_NETCDF
+-if HDF_BUILD_FORTRAN
+-noinst_PROGRAMS = ctest0 ftest0
+-else 
+-noinst_PROGRAMS = ctest0
+-endif
+-else
+-noinst_PROGRAMS = ctest0
+-endif
+-
+ ## Information for building the "ncgen" program
+ ncgen_SOURCES = close.c escapes.c generate.c genlib.c getfill.c init.c      \
+                 load.c main.c ncgentab.c

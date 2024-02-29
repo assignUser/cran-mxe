@@ -1,0 +1,11 @@
+diff -Nru libxml2-2.12.3-orig/libxml-2.0.pc.in libxml2-2.12.3-patched/libxml-2.0.pc.in
+--- libxml2-2.12.3-orig/libxml-2.0.pc.in	2023-11-16 07:17:02.000000000 -0500
++++ libxml2-2.12.3-patched/libxml-2.0.pc.in	2024-01-08 05:31:18.725957937 -0500
+@@ -7,6 +7,6 @@
+ Name: libXML
+ Version: @VERSION@
+ Description: libXML library version2.
+-Requires@XML_PC_PRIVATE@: @XML_PC_REQUIRES@
++Requires@XML_PC_PRIVATE@: @XML_PC_REQUIRES@ liblzma
+ Libs: -L${libdir} @XML_LIBS@ @XML_PC_LIBS_PRIVATE@ @XML_PC_LIBS@ @LIBS@
+ Cflags: @XML_INCLUDEDIR@ @XML_CFLAGS@
